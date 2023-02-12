@@ -2,8 +2,8 @@ modded class PlayerBase extends ManBase
 {
     // DEBUG, Set to 100.
     // otherwise, set to 0.
-    private float           m_SuppressionLevel = 400;
-    private float           m_hearingLossLevel = 400;
+    private float           m_SuppressionLevel = 0;
+    private float           m_hearingLossLevel = 0;
     private bool            m_IsSuppressed;
     private bool            m_IsDeafened;
     private bool            m_HasEarProtection;
@@ -13,19 +13,17 @@ modded class PlayerBase extends ManBase
     private const bool      TINNITUS_DISABLED = true;
     // Headset / Earplugs :)
     // Define display names here :)
-    private ref const array<string>    HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY = { "M73_TacticalHP", "S13_gssh", "TankerHelmet", "S13_Helmet_Exo_Freedom", "S13_Helmet_Exo_Mono", "S13_Helmet_Exo_Merc", "S13_Helmet_Exo_Ecologists", "S13_Helmet_Exo_Duty", "S13_Helmet_Exo_Loner" }; // Add new items by putting a comma after the last entry and surrounding it in "'s. Example: "gssh_headset"
+    private ref const array<string>    HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY = { "M73_TacticalHP", "S13_gssh", "TankerHelmet", "S13_Helmet_Exo_Freedom", "S13_Helmet_Exo_Mono", "S13_Helmet_Exo_Merc", "S13_Helmet_Exo_Ecologists", "S13_Helmet_Exo_Duty", "S13_Helmet_Exo_Loner" }; 
+    // Add new items by putting a comma after the last entry and surrounding it in "'s. Example: "gssh_headset"
     private ref const array<string>     INVENTORY_SLOTS_TO_CHECK = { "Head", "Headgear", "Eyewear", "Shoulder", "Back"};
     //
 
     private const float     SUPPRESSION_MIN = 0; // Generally speaking, keep this at 0.
-    private const float     SUPPRESSION_TINNITUS_START_LEVEL = 175; // Value at which tinnitus starts to play.
+    private const float     SUPPRESSION_TINNITUS_START_LEVEL = 175; // Value at which tinnitus starts to play. If it is enabled.
     private const float     SUPPRESSION_SOUND_START_LEVEL = 140; // Value at which volume is muffled from being suppressed.
-    private const float     SUPPRESSION_SHAKES_START_LEVEL = 20; // Value at which player will start to shake.
-    private const float     SUPPRESSION_SHAKES_STOP_LEVEL = 5; // Value at which player will stop shaking.
     private const float     SUPPRESSION_MAX = 200; // Default: 100
     private const float     SUPPRESSION_DECAY_RATE = 10; // per second. Used when the user has IsSuppressed = true.
     private const float     SUPPRESSION_DECAY_RATE_FAST = 15; // per second. Fast is used when the player has less suppressionLevel.
-    private const int       SUPPRESSION_SHAKES_PER = 6; // Deprecated, does not change any function currently.
     private const int       SUPPRESSION_TUNNEL_FACTOR_PPE = 4; // I don't suggest changing this from 4.
 
     // PPE stuff, changing this to anything won't have an effect. It just holds data later down the line.
@@ -35,11 +33,15 @@ modded class PlayerBase extends ManBase
 	{
 		// lower implement 
 		super.CommandHandler(pDt,pCurrentCommandID,pCurrentCommandFinished);
-        if(GetGame().IsServer())
-            return;
-        // Suppression decrements should be handled purely on the client and updates the server afterwards.
-        //Client only beyond this point. :)
-        ProcessSuppression(pDt);
+        if (!GetGame().IsServer())
+        {
+            // Suppression decrements should be handled purely on the client and updates the server afterwards.
+            //Client only beyond this point. :)
+            ProcessSuppression(pDt);
+        }
+        // Desync issues testing.
+        UpdateNetSyncVariableFloat("m_SuppressionLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
+        UpdateNetSyncVariableFloat("m_hearingLossLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
     }
 
     override void Init()
@@ -83,49 +85,41 @@ modded class PlayerBase extends ManBase
         }
         m_SuppressionLevel = Math.Clamp(m_SuppressionLevel, SUPPRESSION_MIN, SUPPRESSION_MAX);
         m_hearingLossLevel = Math.Clamp(m_hearingLossLevel, SUPPRESSION_MIN, SUPPRESSION_MAX);
-        //Print("[ Suppression Mod ] HEARINGLOSS_LEVEL : " + m_hearingLossLevel);
-        //Print("[ Suppression Mod ] SUPPRESSION_LEVEL : " + m_SuppressionLevel);
+        Print("[ Suppression Mod ] HEARINGLOSS_LEVEL : " + m_hearingLossLevel);
+        Print("[ Suppression Mod ] SUPPRESSION_LEVEL : " + m_SuppressionLevel);
         //Print("[ Suppression Mod ] Hearing Protection? " + m_HasEarProtection);
-
-
         
         //Print("[ Suppression Mod ]: DEBUG: AFTER DECAY & CLAMP || m_SuppressionLevel: " + m_SuppressionLevel);
         
         // Headset / Earplug check
-        bool m_HasEarProtection = CheckHearingProtection();
-        m_IsSuppressed = MiscGameplayFunctions.IsValueInRange(m_SuppressionLevel, SUPPRESSION_SOUND_START_LEVEL, SUPPRESSION_MAX) && !m_HasEarProtection;
-        m_IsDeafened = MiscGameplayFunctions.IsValueInRange(m_hearingLossLevel, SUPPRESSION_SOUND_START_LEVEL, SUPPRESSION_MAX) && !m_HasEarProtection;
+        m_HasEarProtection = CheckHearingProtection();
+        m_IsSuppressed = MiscGameplayFunctions.IsValueInRange(m_SuppressionLevel, SUPPRESSION_SOUND_START_LEVEL, SUPPRESSION_MAX);
+        m_IsDeafened = MiscGameplayFunctions.IsValueInRange(m_hearingLossLevel, SUPPRESSION_SOUND_START_LEVEL, SUPPRESSION_MAX);
 
-        if (!m_HasEarProtection)
-        {
-             // PPE EFFECTS //
-            m_Param = new Param1<float>(0);
-            float maxTunnelVision = 130;
-
-            m_Param.param1 = (Math.Min(maxTunnelVision, m_SuppressionLevel) / SUPPRESSION_TUNNEL_FACTOR_PPE) * dT;
-            PPERequesterBank.GetRequester(PPERequester_TunnelVisionEffects).Start(m_Param);
-        }
-        else
+        if (m_HasEarProtection)
         {
             m_SuppressionLevel = 0;
             m_hearingLossLevel = 0;
+            m_IsDeafened = false;
+            m_IsSuppressed = false;
         }
+
+        // PPE EFFECTS //
+        m_Param = new Param1<float>(0);
+        float maxTunnelVision = 130;
+        m_Param.param1 = (Math.Min(maxTunnelVision, m_SuppressionLevel) / SUPPRESSION_TUNNEL_FACTOR_PPE) * dT;
+        PPERequesterBank.GetRequester(PPERequester_TunnelVisionEffects).Start(m_Param);
         
         // Deafened? Apply attenuation.
-        if (m_IsDeafened)
+        if (m_IsDeafened && !m_HasEarProtection)
         {
             SetMasterAttenuation("SuppressionAttenuation");
         } 
         // Cancel attenuation
-        else if (!m_IsDeafened)
+        else if (!m_IsDeafened || m_HasEarProtection)
         {
             SetMasterAttenuation("");
         }
-
-
-        // Desync issues testing.
-        UpdateNetSyncVariableFloat("m_SuppressionLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
-        UpdateNetSyncVariableFloat("m_hearingLossLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
     }
 
     void ApplySuppression(int val)
@@ -135,7 +129,7 @@ modded class PlayerBase extends ManBase
         m_SuppressionLevel += val;
         ApplyHearingLoss(val);
         m_SuppressionLevel = Math.Clamp(m_SuppressionLevel, SUPPRESSION_MIN, SUPPRESSION_MAX);
-        Print("[ Suppression Mod ]: PlayerBase.c || m_SuppressionLevel: " + m_SuppressionLevel);
+        //Print("[ Suppression Mod ]: PlayerBase.c || m_SuppressionLevel: " + m_SuppressionLevel);
 
         // Desync issues testing.
         UpdateNetSyncVariableFloat("m_SuppressionLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
@@ -153,6 +147,10 @@ modded class PlayerBase extends ManBase
     // HEARING PROTECTION IMPLEMENTATION BOOLEAN //
     bool CheckHearingProtection()
     {
+        if (!GetGame().GetPlayer())
+        {
+            return false;
+        }
         bool hearingProtection = false;
         int inventoryCount = DefaultCharacterCreationMethods.GetAttachmentSlotsArray().Count();
         //Print("[ Suppression Mod ] : PlayerBase.c : SlotsArrayCount: " + inventoryCount);

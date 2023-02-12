@@ -21,7 +21,7 @@ class CfgMods
         name = "Suppression module";
         author = "Jupiter, Spaghetto";
         authorID = "";
-        version = "11.0";
+        version = "12.0";
         extra = 0;
         dependencies[] = {"GameLib","Game","World","Mission"};                
         type = "mod";

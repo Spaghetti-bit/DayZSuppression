@@ -17,8 +17,8 @@ class SuppressionTrigger : ManTrigger
 		{
 			//NotificationSystem.AddNotificationExtended(1, "Suppression System: Trigger", "Trigger created at @ [X, Y, Z]: " + triggerPosStr);
 		}
-		// Automatically deleted after 75ms.
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( DeleteSafe, 75);
+		// Automatically deleted after 100ms.
+		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( DeleteSafe, 100);
     }
 	override void OnEnter( Object obj )
 	{
