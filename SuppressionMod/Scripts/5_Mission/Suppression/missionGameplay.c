@@ -2,10 +2,8 @@ modded class MissionGameplay extends MissionBase
 {
     void MissionGameplay()
     {
-        if( !GetGame().IsDedicatedServer()) // Register server->client RPCs
-        {
-            GetRPCManager().AddRPC("Suppression", "RPC_SendPPEStartToClient", this, SingeplayerExecutionType.Client);
-        }
+        // Register server->client RPCs
+        GetRPCManager().AddRPC("Suppression", "RPC_SendPPEStartToClient", this, SingeplayerExecutionType.Client);
     }
     // Client Side ( Server -> Client )
     void RPC_SendPPEStartToClient(CallType type, ref ParamsReadContext ctx, ref PlayerIdentity sender, ref Object target)

@@ -1,4 +1,3 @@
-// Script File
 modded class WeaponFire extends WeaponStartAction
 {
 	override void OnEntry (WeaponEventBase e)
@@ -39,7 +38,7 @@ modded class WeaponFire extends WeaponStartAction
 				aim_point = aim_point.Normalized() * distance;
 				aim_point = aim_point + end_point;
 
-				vector beg_Pos = end_point + (vector.Direction(barrelPosition, muzzlePosition ).Normalized() * 1.2);
+				vector beg_Pos = end_point + (vector.Direction(barrelPosition, muzzlePosition ).Normalized() * 2);
 				
 				// Move beg_pos 1 unit forward to avoid collision with gun.
 				vector end_Pos = aim_point;

@@ -1,0 +1,11 @@
+name = "SuppressionMod";
+// picture = "";
+// logo = "";
+// logoSmall = "";
+// logoOver = "";
+tooltip = "SuppressionMod";
+// overview = "";
+// action = "";
+author = "SpaghettiBit";
+// authorID = "";
+version = "1.0";
