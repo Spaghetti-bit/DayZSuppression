@@ -3,8 +3,7 @@ modded class MissionServer
     override void OnMissionStart()
     {
         super.OnMissionStart();
-        // TODO: Remove print when not testing.
-        Print(" [ Suppression Mod ] : File System dir: " + SUPPRESSION_ROOT_DIR);
+        //Set up Suppression Config Directory/File
         MakeDirectory(SUPPRESSION_ROOT_DIR);
 
         if (!FileExist(SUPPRESSION_EARPROTECTION_CONFIG))
@@ -16,6 +15,6 @@ modded class MissionServer
                 CloseFile(file);
             }
         }
-        //SupFileManager.LoadConfig();
+
     }
 }

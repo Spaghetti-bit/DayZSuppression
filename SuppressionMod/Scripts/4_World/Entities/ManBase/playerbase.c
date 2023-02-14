@@ -12,8 +12,8 @@ modded class PlayerBase extends ManBase
     private const bool      TINNITUS_DISABLED = true;
     // Headset / Earplugs :)
     // Define display names here :)
-    private ref const array<string>    HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY = { "M73_TacticalHP", "S13_gssh", "TankerHelmet", "S13_Helmet_Exo_Freedom", "S13_Helmet_Exo_Mono", "S13_Helmet_Exo_Merc", "S13_Helmet_Exo_Ecologists", "S13_Helmet_Exo_Duty", "S13_Helmet_Exo_Loner" }; 
-    //private ref const array<string>      HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY = SupFileManager.GetEarprotectionArray()
+    ref TStringArray earProtectionItems;
+        //private ref const array<string>      HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY = SupFileManager.GetEarprotectionArray()
 
     // Add new items by putting a comma after the last entry and surrounding it in "'s. Example: "gssh_headset"
     private ref const array<string>     INVENTORY_SLOTS_TO_CHECK = { "Head", "Headgear", "Eyewear", "Shoulder", "Back"};
@@ -49,6 +49,9 @@ modded class PlayerBase extends ManBase
     override void Init()
     {
         super.Init();
+        //Initialize our TStringArray for RPC information.
+        earProtectionItems = new TStringArray();
+
         RegisterNetSyncVariableFloat("m_SuppressionLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
         RegisterNetSyncVariableFloat("m_hearingLossLevel", SUPPRESSION_MIN, SUPPRESSION_MAX, 1);
         if(GetGame().IsServer())
@@ -183,10 +186,10 @@ modded class PlayerBase extends ManBase
             //Print("[ Suppression Mod ] : PlayerBase.c : Item: " + nameOfItemOnSlot);
             
             // Iterate through our defined list of ear protection items.
-            for (int j = 0; j < HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY.Count(); j++)
+            for (int j = 0; j < earProtectionItems.Count(); j++)
             {
-                //Print("[ Suppression Mod ] : PlayerBase.c : Checking: " + HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY[j]);
-                hearingProtection = HEADSET_EARPLUG_ITEM_DISPLAY_NAME_ARRAY[j] == nameOfItemOnSlot;
+                //Print("[ Suppression Mod ] : PlayerBase.c : Checking: " + earProtectionItems[j]);
+                hearingProtection = earProtectionItems[j] == nameOfItemOnSlot;
                 if (hearingProtection)
                 {
                     m_EarProtection = item;
