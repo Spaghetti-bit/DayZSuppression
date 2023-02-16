@@ -2,10 +2,10 @@ modded class MissionGameplay
 {
     void MissionGameplay()
     {
-        GetRPCManager().AddRPC("Suppression", "GetConfigResponse", this, SingleplayerExecutionType.Client);
+        GetRPCManager().AddRPC("Suppression", "GetEarProtectionConfig", this, SingleplayerExecutionType.Client);
     }
 
-    void GetConfigResponse(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+    void GetEarProtectionConfig(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
     {
         if(type != CallType.Client)
             return;
@@ -29,7 +29,7 @@ modded class MissionServer
     override void InvokeOnConnect (PlayerBase player, PlayerIdentity identity)
     {
         super.InvokeOnConnect(player,identity);
-        GetRPCManager().SendRPC("Suppression", "GetConfigResponse", new Param1<TStringArray>(SupFileManager.ReadFileLines(SUPPRESSION_EARPROTECTION_CONFIG)), true, identity);
+        GetRPCManager().SendRPC("Suppression", "GetEarProtectionConfig", new Param1<TStringArray>(SupFileManager.ReadFileLines(SUPPRESSION_EARPROTECTION_CONFIG)), true, identity);
     }
 }
 

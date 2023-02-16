@@ -21,15 +21,10 @@ class CfgMods
 		authorID = "";
 		version = "15.0";
 		extra = 0;
-		dependencies[] = {"GameLib","Game","World","Mission"};
+		dependencies[] = {"Game","World","Mission"};
 		type = "mod";
 		class defs
 		{
-			class gameLibScriptModule
-			{
-				value = "";
-				files[] = {"SuppressionMod/Scripts/2_GameLib"};
-			};
 			class gameScriptModule
 			{
 				value = "";
