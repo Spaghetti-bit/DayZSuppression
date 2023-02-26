@@ -142,10 +142,6 @@ modded class PlayerBase extends ManBase
     // HEARING PROTECTION IMPLEMENTATION BOOLEAN //
     bool CheckHearingProtection(EntityAI item)
     {
-        if (!GetGame().GetPlayer())
-        {
-            return false;
-        }
         bool hearingProtection = false;
         for (int j = 0; j < earProtectionItems.Count(); j++)
         {
