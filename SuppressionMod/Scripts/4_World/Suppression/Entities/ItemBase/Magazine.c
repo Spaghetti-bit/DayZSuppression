@@ -9,4 +9,4 @@ modded class AmmoData
     {
         return m_CartridgeType;
     }
-}
+};

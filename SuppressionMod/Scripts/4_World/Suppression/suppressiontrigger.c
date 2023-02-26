@@ -5,20 +5,20 @@ class SuppressionTrigger : ManTrigger
 	private float m_suppressionAmount;
 
 	override void EOnInit(IEntity other, int extra)
-    {
-		// Extents, how big the trigger is.
-        const vector mins = "-0.2 -0.05 -0.2";
-        const vector maxs = ".2 .1 .2";
-        SetExtents(mins, maxs);
-		
-		// Automatically deleted after 100ms.
-		GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater( DeleteSafe, 100);
-    }
-	override void OnEnter( Object obj )
 	{
-		super.OnEnter( obj );
+		// Extents, how big the trigger is.
+		const vector mins = "-0.2 -0.05 -0.2";
+		const vector maxs = ".2 .1 .2";
+		SetExtents(mins, maxs);
+
+		// Automatically deleted after 100ms.
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteSafe, 100);
+	}
+	override void OnEnter(Object obj)
+	{
+		super.OnEnter(obj);
 		PlayerBase player;
-		if( Class.CastTo( player, obj ))
+		if (Class.CastTo(player, obj))
 		{
 			if (player.GetIdentity() != null)
 			{
@@ -30,12 +30,12 @@ class SuppressionTrigger : ManTrigger
 		DeleteSafe();
 	}
 
-	void SetIgnoreEntity( PlayerBase obj )
+	void SetIgnoreEntity(PlayerBase obj)
 	{
 		m_ignoreObj = obj;
 	}
 
-	void SetSuppressionAmount( float amt )
+	void SetSuppressionAmount(float amt)
 	{
 		m_suppressionAmount = amt;
 	}

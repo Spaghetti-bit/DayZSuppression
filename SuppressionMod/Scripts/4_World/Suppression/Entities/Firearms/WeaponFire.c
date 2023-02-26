@@ -1,6 +1,6 @@
 modded class WeaponFire extends WeaponStartAction
 {
-	override void OnEntry (WeaponEventBase e)
+	override void OnEntry(WeaponEventBase e)
 	{
 		if (e)
 		{
@@ -13,13 +13,12 @@ modded class WeaponFire extends WeaponStartAction
 				if (Class.CastTo(p, e.m_player))
 					p.GetAimingModel().SetRecoil(m_weapon);
 				m_weapon.OnFire(mi);
-				vector barrelPosition = m_weapon.ModelToWorld(m_weapon.GetSelectionPositionLS( "konec hlavne" ));
-				vector muzzlePosition = m_weapon.ModelToWorld(m_weapon.GetSelectionPositionLS( "usti hlavne" ));
+				vector barrelPosition = m_weapon.ModelToWorld(m_weapon.GetSelectionPositionLS("konec hlavne"));
+				vector muzzlePosition = m_weapon.ModelToWorld(m_weapon.GetSelectionPositionLS("usti hlavne"));
 
 				// !!!MAX DISTANCE SUPPRESSION CAN HAPPEN!!!
 				float distance = 1100;
 				// !!!MAX DISTANCE SUPPRESSION CAN HAPPEN!!!
-
 
 				vector end_point = muzzlePosition;
 				vector begin_point = barrelPosition;
@@ -27,8 +26,8 @@ modded class WeaponFire extends WeaponStartAction
 				aim_point = aim_point.Normalized() * distance;
 				aim_point = aim_point + end_point;
 
-				vector beg_Pos = end_point + (vector.Direction(barrelPosition, muzzlePosition ).Normalized() * 2);
-				
+				vector beg_Pos = end_point + (vector.Direction(barrelPosition, muzzlePosition).Normalized() * 2);
+
 				// Move beg_pos 1 unit forward to avoid collision with gun.
 				vector end_Pos = aim_point;
 
@@ -36,19 +35,18 @@ modded class WeaponFire extends WeaponStartAction
 				Object hitObjectSCB;
 				PhxInteractionLayers layerMask = PhxInteractionLayers.CHARACTER;
 
-
 				//Client side shooting for RPC.
-				if ( !GetGame().IsServer())
+				if (!GetGame().IsServer())
 				{
-					
-					AmmoData firedBulletData = Magazine.GetAmmoData( m_weapon.GetChamberAmmoTypeName( mi ));
+
+					AmmoData firedBulletData = Magazine.GetAmmoData(m_weapon.GetChamberAmmoTypeName(mi));
 					CartridgeType bulletCartType = firedBulletData.GetCartridgeType();
-					
+
 					PlayerBase player;
 					PlayerBase.CastTo(player, e.m_player);
-					if(player)
+					if (player)
 					{
-						player.ApplyHearingLoss( 3 );
+						player.ApplyHearingLoss(3);
 					}
 					// SphereCast Method
 					DayZPhysics.SphereCastBullet(beg_Pos, aim_point, 0.6, layerMask, null, hitObjectSCB, hit_pos, null, null);
@@ -63,11 +61,10 @@ modded class WeaponFire extends WeaponStartAction
 						//Sending RPC (Client -> Server)
 						GetRPCManager().SendRPC("Suppression", "CreateSuppressionTriggerEx", params);
 					}
-					
 				}
 			}
-	}
-	super.OnEntry(e);
+		}
+		super.OnEntry(e);
 	}
 
 	float CartridgeTypeToSuppression(CartridgeType type)
