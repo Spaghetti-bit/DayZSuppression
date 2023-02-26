@@ -10,14 +10,13 @@ modded class MissionGameplay extends MissionBase
     {
         if(type != CallType.Client)
 			return;
-    	//if the data is not retrieved we return to avoid issue
+
         Param2<PlayerBase, float> data;
 		if (!ctx.Read(data)) 
 			return;
         
         PlayerBase player;
-        //float suppressionAmount = data.param2;
-        //Print("[ Suppression Mod ]: SENDPPETOCLIENT: Suppression AMT: " + suppressionAmount);
+
 		if( Class.CastTo( player, data.param1 ))
 		{
             player.SpawnShockEffect( 0.7 );

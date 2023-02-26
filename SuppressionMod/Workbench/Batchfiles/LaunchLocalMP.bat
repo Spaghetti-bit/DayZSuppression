@@ -171,7 +171,7 @@ for %%a in ("%mods:;=" "%") do (
 chdir /d "%gameDirectory%"
 echo start %clientEXE% %clientLaunchParams% "-mod=%modList%" "%playerName%" -dologs -adminlog -freezecheck "-scriptDebug=true"
 
-start %clientEXE% %clientLaunchParams% "-mod=%modList%" "%playerName%" -dologs -adminlog -freezecheck "-scriptDebug=true" -connect=127.0.0.1:2305
+start %clientEXE% %clientLaunchParams% "-mod=%modList%" "%playerName%" -dologs -adminlog -freezecheck "-scriptDebug=true" -connect=127.0.0.1:2302
 
 
 

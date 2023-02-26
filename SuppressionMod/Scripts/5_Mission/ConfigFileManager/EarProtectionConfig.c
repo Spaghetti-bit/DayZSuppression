@@ -15,6 +15,5 @@ modded class MissionServer
                 CloseFile(file);
             }
         }
-
     }
 }

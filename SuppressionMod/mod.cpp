@@ -6,6 +6,6 @@ name = "SuppressionMod";
 tooltip = "SuppressionMod";
 // overview = "";
 // action = "";
-author = "SpaghettiBit";
+author = "SpaghettiBit, NullWorld";
 // authorID = "";
 version = "1.0";
