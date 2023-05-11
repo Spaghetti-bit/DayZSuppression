@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class Suppression
+	class SpaghettiSuppression
 	{
 		requiredAddons[] = {"DZ_Data","DZ_Scripts","DZ_Characters"};
 		units[] = {};
@@ -9,9 +9,9 @@ class CfgPatches
 };
 class CfgMods
 {
-	class Suppression
+	class SpaghettiSuppression
 	{
-		dir = "Suppression";
+		dir = "SpaghettiSuppression";
 		picture = "";
 		action = "";
 		hideName = 1;
@@ -19,7 +19,7 @@ class CfgMods
 		name = "Suppression module";
 		author = "Jupiter, Spaghetto, NullWorld";
 		authorID = "";
-		version = "15.0";
+		version = "20.2";
 		extra = 0;
 		dependencies[] = {"Game","World","Mission"};
 		type = "mod";
@@ -28,17 +28,17 @@ class CfgMods
 			class gameScriptModule
 			{
 				value = "";
-				files[] = {"SuppressionMod/Scripts/3_Game"};
+				files[] = {"SpaghettiSuppression/Scripts/3_Game"};
 			};
 			class worldScriptModule
 			{
 				value = "";
-				files[] = {"SuppressionMod/Scripts/4_World"};
+				files[] = {"SpaghettiSuppression/Scripts/4_World"};
 			};
 			class missionScriptModule
 			{
 				value = "";
-				files[] = {"SuppressionMod/Scripts/5_Mission"};
+				files[] = {"SpaghettiSuppression/Scripts/5_Mission"};
 			};
 		};
 	};
