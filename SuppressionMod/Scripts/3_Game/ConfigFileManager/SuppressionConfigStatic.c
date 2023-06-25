@@ -5,10 +5,10 @@ class SupFileManager
 		FileHandle file;
 		string line;
 
-		array<string> contents = {};
+		array<string> contents = { };
 
 		file = OpenFile(path, FileMode.READ);
-		while (FGets(file, line)> 0)
+		while (FGets(file, line) > 0)
 		{
 			line.Trim();
 			if (line != string.Empty)
@@ -19,5 +19,5 @@ class SupFileManager
 		}
 		CloseFile(file);
 		return contents;
-	}
-}
+	};
+};

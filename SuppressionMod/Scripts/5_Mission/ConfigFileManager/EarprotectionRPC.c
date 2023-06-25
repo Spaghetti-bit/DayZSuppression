@@ -1,35 +1,32 @@
-modded class MissionGameplay
+#ifdef SERVER
+[CF_RegisterModule(SuppressionSettingsModule)]
+#endif
+
+class SuppressionSettingsModule : CF_ModuleWorld
 {
-    void MissionGameplay()
+    override void OnInit()
     {
-        GetRPCManager().AddRPC("Suppression", "GetConfigResponse", this, SingleplayerExecutionType.Client);
+        super.OnInit();
+
+        EnableClientPrepare();
+        InitConfiguration();
     }
 
-    void GetConfigResponse(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+    void InitConfiguration()
     {
-        if(type != CallType.Client)
-            return;
+        SuppressionConfigSettings config = SuppressionConfigSettings.GetInstance();
 
-        Param1<TStringArray> data;
+        if (FileExist(SUPPRESSION_SUPPRESSION_SETTINGS_CONFIG))
+            JsonFileLoader<SuppressionConfigSettings>.JsonLoadFile(SUPPRESSION_SUPPRESSION_SETTINGS_CONFIG, config);
 
-        if (!ctx.Read(data))
-            return;
+        JsonFileLoader<SuppressionConfigSettings>.JsonSaveFile(SUPPRESSION_SUPPRESSION_SETTINGS_CONFIG, config);
+    }
 
-        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+    override void OnClientPrepare(Class sender, CF_EventArgs args)
+    {
+        super.OnClientPrepare(sender, args);
 
-        if(player)
-        {
-            player.earProtectionItems = data.param1;
-        }
+        auto cArgs = CF_EventPlayerPrepareArgs.Cast(args);
+        SuppressionConfigSettings.SyncDataSend(cArgs.Identity);
     }
 }
-
-modded class MissionServer
-{
-    override void InvokeOnConnect (PlayerBase player, PlayerIdentity identity)
-    {
-        super.InvokeOnConnect(player,identity);
-        GetRPCManager().SendRPC("Suppression", "GetConfigResponse", new Param1<TStringArray>(SupFileManager.ReadFileLines(SUPPRESSION_EARPROTECTION_CONFIG)), true, identity);
-    }
-}
-

@@ -2,7 +2,7 @@
 [WorkbenchPluginAttribute("Edit Project", "Edit Project", "", "", {"ResourceManager", "ScriptEditor"})]
 class DayZProjectManager: DayZTool
 {
-	string ModName = "SuppressionMod";
+	string ModName = "SpaghettiSuppression";
 		
 	override void Run()
 	{

@@ -2,137 +2,159 @@ modded class WeaponFire extends WeaponStartAction
 {
 	override void OnEntry (WeaponEventBase e)
 	{
-		if (e)
+		if ( GetGame().IsClient() )
 		{
-			m_dtAccumulator = 0;
-	
-			//if (LogManager.IsWeaponLogEnable()) { wpnPrint("[wpnfsm] " + Object.GetDebugName(m_weapon) + " WeaponFire bang!"); }
-			//m_weapon.Fire();
-			int mi = m_weapon.GetCurrentMuzzle();
-			if (TryFireWeapon(m_weapon, mi))
+			PlayerBase player;
+			PlayerBase.CastTo(player, e.m_player);
+			if(player)
 			{
-				
-				
+				player.ApplyHearingLoss( 5 );
+			}
 
-				DayZPlayerImplement p;
-				if (Class.CastTo(p, e.m_player))
-					p.GetAimingModel().SetRecoil(m_weapon);
-				m_weapon.OnFire(mi);
-				// SphereCastBullet(vector begPos, vector endPos, float radius, PhxInteractionLayers layerMask, Object ignoreObj, out Object hitObject, out vector hitPosition, out vector hitNormal, out float hitFraction);
-				/*
-					begPos = weapon muzzle 
-					endPos = 1000m from muzzle
-					PhxInteraction Layers mask
-				*/
+			if (player.CanPlayerSuppress())
+			{
+				// Collect data from muzzle index (MI)
+				int mi = m_weapon.GetCurrentMuzzle();
+				AmmoData firedBulletData = Magazine.GetAmmoData( m_weapon.GetChamberAmmoTypeName( mi ));
+				CartridgeType bulletCartType = firedBulletData.GetCartridgeType();
+				
 				vector barrelPosition = m_weapon.ModelToWorld(m_weapon.GetSelectionPositionLS( "konec hlavne" ));
 				vector muzzlePosition = m_weapon.ModelToWorld(m_weapon.GetSelectionPositionLS( "usti hlavne" ));
 
 				// !!!MAX DISTANCE SUPPRESSION CAN HAPPEN!!!
-				float distance = 800;
+				float distance = 500;
 				// !!!MAX DISTANCE SUPPRESSION CAN HAPPEN!!!
 
 
 				vector end_point = muzzlePosition;
 				vector begin_point = barrelPosition;
+
 				vector aim_point = end_point - begin_point;
 				aim_point = aim_point.Normalized() * distance;
 				aim_point = aim_point + end_point;
 
-				vector beg_Pos = end_point + (vector.Direction(barrelPosition, muzzlePosition ).Normalized() * 2);
-				
-				// Move beg_pos 1 unit forward to avoid collision with gun.
+				// Move beg_pos X unit(s) forward to avoid collision with gun.
+				vector beg_Pos = end_point + (vector.Direction(barrelPosition, muzzlePosition ).Normalized() * 2.5);
 				vector end_Pos = aim_point;
-
+				//
+				//GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater(FindBullet, 10, false, muzzlePosition);
 				vector hit_pos;
 				vector hit_normal;
 				vector hit_normalSCB;
-				// vector hit_dir;
-				// int contactComponent;
 				float hit_fraction; 
 				float hit_fractionSCB; 
 				Object hitObjectRCB;
 				Object hitObjectSCB;
-				PhxInteractionLayers layerMask = PhxInteractionLayers.CHARACTER  /*| PhxInteractionLayers.TERRAIN | PhxInteractionLayers.BUILDING | PhxInteractionLayers.ROADWAY */;
-				// //set<Object> results;
-
-				vector 		from 			=  end_point;
-				//GetGame().GetCurrentCameraPosition();
-				vector 		to 				= from + vector.Direction(barrelPosition, muzzlePosition ).Normalized() * distance;
-				//from + (GetGame().GetCurrentCameraDirection() * distance);
-				vector 		contact_pos;
-				vector 		contact_dir;
-				int 		contactComponent;
-				set<Object> results;
-				array<Object> nearObjects;
-				array<Object> vicinityObjects;
-
-				
-				//Client side shooting for RPC.
-				if ( !GetGame().IsServer())
+				PhxInteractionLayers layerMask = PhxInteractionLayers.CHARACTER;
+				DayZPhysics.SphereCastBullet(beg_Pos, aim_point, 0.6, layerMask, player, hitObjectSCB, hit_pos, null, null);
+				if (hitObjectSCB)
 				{
-					
-					AmmoData firedBulletData = Magazine.GetAmmoData( m_weapon.GetChamberAmmoTypeName( mi ));
-					CartridgeType bulletCartType = firedBulletData.GetCartridgeType();
-					//Print("[ Suppression Mod ]: WeaponFire.c : Cartridge Type: " + typename.EnumToString(CartridgeType, bulletCartType));
-					PlayerBase player;
-					PlayerBase.CastTo(player, e.m_player);
-					if(player)
+					//Print("[Spaghetti Suppression] :: SphereCastBullet Hit OBJ: " + hitObjectSCB.GetType());
+					PlayerBase hitPlayer = PlayerBase.Cast(hitObjectSCB);
+					//if (hitPlayer && hitPlayer.GetIdentity() != null)
+					if (CartridgeTypeToSuppression(bulletCartType) != ESuppressionStamina.SUPPPRESSION_PISTOL)
 					{
-						player.ApplyHearingLoss( 3 );
-						//float ammoTypeToSuppression = CartridgeTypeToSuppression(bulletCartType);
-						//Param3<vector, vector, float> params = new Param3<vector, vector, float>(end_point, aim_point, ammoTypeToSuppression); // The value to be sent through RPC
-						//GetRPCManager().SendRPC("Suppression", "RPC_ShootSCBFromPlayer", params);
+						if (hitPlayer)
+						{
+							//if (bulletCartType != CartridgeType.Pistol)
+							{
+								player.SetPlayerCanSuppress(false);
+								// Testing player can only suppress once every X / 1000 seconds OR X milliseconds
+								GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater(player.SetPlayerCanSuppress, 500, false, true);
+								Param2<PlayerBase, ESuppressionStamina> params;
+								// Player to apply PPE to and the amount to apply.
+								ESuppressionStamina suppressionAmount = CartridgeTypeToSuppression(bulletCartType);
+								params = new Param2<PlayerBase, ESuppressionStamina>(hitPlayer, suppressionAmount);
+								//hitPlayer.ApplySuppression(suppressionAmount);
+								GetRPCManager().SendRPC("Suppression", "RPC_SuppressionApply", params);
+							}
+						}
 					}
-					//DayZPhysics.RayCastBullet(from, to, layerMask, e.m_player, hitObjectRCB, contact_pos, hit_normal, hit_fraction);
-					// SphereCast Method
-					DayZPhysics.SphereCastBullet(beg_Pos, aim_point, 0.6, layerMask, null, hitObjectSCB, hit_pos, null, null);
-					//Particle particle1 = Particle.PlayInWorld(ParticleList.DEBUG_DOT, end_point); // Muzzle
-					//Particle particle2 = Particle.PlayInWorld(ParticleList.DEBUG_DOT, beg_Pos); // Suppression Start Point
-					if (hit_pos != vector.Zero)
-					{
-						Param2<vector, float> params; // The value to be sent through RPC
-
-						// Data update.
-						float ammoTypeToSuppression = CartridgeTypeToSuppression(bulletCartType);
-						params = new Param2<vector, float>(hit_pos, ammoTypeToSuppression);
-						GetRPCManager().SendRPC("Suppression", "CreateSuppressionTriggerEx", params);
-						// if (hitObjectSCB)
-						// {
-						// 	Print("[ Suppression Mod ]: WeaponFire.c : Hit Object: " + hitObjectSCB.GetType());
-						// }
-						
-						//Particle particle3 = Particle.PlayInWorld(ParticleList.DEBUG_DOT, hit_pos); // Point of hit.
-						//Sending RPC (Client -> Server)
-					}
-					
 				}
 			}
+		}
+		super.OnEntry(e);
+		/*TODO: Implement bullet based suppression.
+		// Very intensive on the server sadly.
+		//==================================================
+						NOT IMPLEMENTED.
+		//==================================================
+		*/
+		//GetGame().GetCallQueue( CALL_CATEGORY_SYSTEM ).CallLater(FindBullet, 50, false, CartridgeTypeToSuppression(bulletCartType), player);
 	}
-	super.OnEntry(e);
-	}
-
-	float CartridgeTypeToSuppression(CartridgeType type)
+	ESuppressionStamina CartridgeTypeToSuppression(CartridgeType type)
 	{
-		float suppressionAmount = 0;
+		// Values defined in enums. See estaminamodifiers.c
+		ESuppressionStamina suppressionAmount = 0;
 		switch (type)
 		{
 			case CartridgeType.None:
 				return 0;
 			case CartridgeType.Pistol:
-				suppressionAmount = 3;
+				suppressionAmount = ESuppressionStamina.SUPPPRESSION_PISTOL;
 				break;
 			case CartridgeType.Intermediate:
-				suppressionAmount = 5;
+				suppressionAmount = ESuppressionStamina.SUPPPRESSION_INTERMEDIATE;
 				break;
 			case CartridgeType.FullPower:
-				suppressionAmount = 20;
+				suppressionAmount = ESuppressionStamina.SUPPPRESSION_FULLPOWER;
 				break;
 			case CartridgeType.Shell:
-				suppressionAmount = 15;
+				suppressionAmount = ESuppressionStamina.SUPPPRESSION_SHELL;
 				break;
 			default:
 				return 0;
 		}
 		return suppressionAmount;
 	}
+	/*
+    //==================================================
+                    NOT IMPLEMENTED.
+    //==================================================
+    */
+	// void FindBullet(float suppressionAmountFromTrigger, PlayerBase player)
+	// {
+	// 	array<Object> objects = new array<Object>;
+	// 	GetGame().GetObjectsAtPosition(m_weapon.GetWorldPosition(), 300, objects, NULL);
+	// 	for (int i = 0; i < objects.Count(); ++i)
+	// 	{
+	// 		ObjectBullet checkObject = objects[i];
+	// 		bool isBullet = (checkObject && BULLET_TYPES.Find(checkObject.ConfigGetString("model")) > -1 && !checkObject.HasBeenFound());
+	// 		if (isBullet)
+	// 		{
+	// 			ObjectBullet bullet = objects[i];
+	// 			if (bullet)
+	// 			{
+	// 				bullet.SetHasBeenFound(true);
+	// 				bullet.SetIsBullet(true);
+	// 				//Print("[Spaghetti Suppression] :: Weaponfire.c :: Bullet found.");
+	// 				// Create trigger on bullet.
+	// 				//TODO:
+	// 				player.SetLastFiredBullet(bullet);
+	// 				//Print("[Spaghetti Suppression] :: RPC Client Side PlayerBase (WeaponFire.c) :: Last Fired Bullet: " + player.GetLastFiredBullet());
+	// 				CreateSuppressionTrigger(bullet, suppressionAmountFromTrigger);
+	// 				//objects[i].AddChild(suppressionTrigger, -1);
+	// 			}
+	// 		}
+	// 	}
+	// }
+	/*
+    //==================================================
+                    NOT IMPLEMENTED.
+    //==================================================
+    */
+	// void CreateSuppressionTrigger(Object bullet, float suppressionAmountFromTrigger)
+	// {
+	// 	//ParticleSource p = ParticleManager.GetInstance().CreateParticle(ParticleList.ROADFLARE_BURNING_MAIN, bullet.GetPosition());
+	// 	//Print("Model Path: " + bullet.ConfigGetString("model"));
+	// 	//Print("Type: " + bullet.GetType());
+	// 	//Print("=================================================");
+	// 	// Server side stuff.
+	// 	Param2<vector, float> params = new Param2<vector, float>(bullet.GetPosition(), suppressionAmountFromTrigger);
+	// 	//Print("[Spaghetti Suppression] :: RPC Client Side :: Param1: " + params.param1);
+	// 	//Print("=================================================");
+	// 	// Send data to server.
+	// 	GetRPCManager().SendRPC("Suppression", "CreateSuppressionTriggerEx", params);
+	// }
+	
 }

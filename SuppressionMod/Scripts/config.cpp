@@ -1,6 +1,15 @@
+////////////////////////////////////////////////////////////////////
+//DeRap: config.bin
+//Produced from mikero's Dos Tools Dll version 9.10
+//https://mikero.bytex.digital/Downloads
+//'now' is Fri Jun 23 00:00:10 2023 : 'file' last modified on Mon Apr 10 14:21:50 2023
+////////////////////////////////////////////////////////////////////
+
+#define _ARMA_
+
 class CfgPatches
 {
-	class Suppression
+	class SpaghettiSuppression
 	{
 		requiredAddons[] = {"DZ_Data","DZ_Scripts","DZ_Characters"};
 		units[] = {};
@@ -9,7 +18,7 @@ class CfgPatches
 };
 class CfgMods
 {
-	class Suppression
+	class SpaghettiSuppression
 	{
 		dir = "Suppression";
 		picture = "";
@@ -19,31 +28,26 @@ class CfgMods
 		name = "Suppression module";
 		author = "Jupiter, Spaghetto, NullWorld";
 		authorID = "";
-		version = "15.0";
+		version = "62023469420.696969";
 		extra = 0;
-		dependencies[] = {"GameLib","Game","World","Mission"};
+		dependencies[] = {"Game","World","Mission"};
 		type = "mod";
 		class defs
 		{
-			class gameLibScriptModule
-			{
-				value = "";
-				files[] = {"SuppressionMod/Scripts/2_GameLib"};
-			};
 			class gameScriptModule
 			{
 				value = "";
-				files[] = {"SuppressionMod/Scripts/3_Game"};
+				files[] = {"SpaghettiSuppression/Scripts/3_Game"};
 			};
 			class worldScriptModule
 			{
 				value = "";
-				files[] = {"SuppressionMod/Scripts/4_World"};
+				files[] = {"SpaghettiSuppression/Scripts/4_World"};
 			};
 			class missionScriptModule
 			{
 				value = "";
-				files[] = {"SuppressionMod/Scripts/5_Mission"};
+				files[] = {"SpaghettiSuppression/Scripts/5_Mission"};
 			};
 		};
 	};
