@@ -76,7 +76,7 @@ GameProjectClass {
 					Paths {
 						"scripts/editor/Workbench"
 						"scripts/editor/plugins"
-						"SuppressionMod/scripts/editor/plugins"
+						"SpaghettiSuppression/Workbench/editor/plugins"
 					} 
 					EntryPoint ""
 				} 
